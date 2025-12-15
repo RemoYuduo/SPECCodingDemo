@@ -1,5 +1,6 @@
 const ProductService = require('../services/productService');
 const { successResponse, errorResponse } = require('../utils/response');
+const { processUploadImages, deleteImage } = require('../utils/fileUpload');
 
 class AdminController {
   /**
@@ -320,6 +321,71 @@ class AdminController {
     } catch (error) {
       console.error('获取热销商品失败:', error);
       return errorResponse(res, 'SYS_001', '获取热销商品失败', error.message);
+    }
+  }
+
+  /**
+   * 上传单个商品图片
+   */
+  static async uploadProductImage(req, res) {
+    try {
+      if (!req.file) {
+        return errorResponse(res, 'SYS_001', '请选择要上传的图片');
+      }
+
+      // 处理上传的图片
+      const processedImages = await processUploadImages([req.file]);
+      
+      if (processedImages.length === 0) {
+        return errorResponse(res, 'SYS_001', '图片上传失败');
+      }
+
+      const uploadedImage = processedImages[0];
+      
+      return successResponse(res, {
+        filename: uploadedImage.filename,
+        url: uploadedImage.url,
+        size: uploadedImage.size
+      }, '图片上传成功');
+    } catch (error) {
+      console.error('图片上传失败:', error);
+      return errorResponse(res, 'SYS_001', '图片上传失败', error.message);
+    }
+  }
+
+  /**
+   * 上传多个商品图片
+   */
+  static async uploadProductImages(req, res) {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return errorResponse(res, 'SYS_001', '请选择要上传的图片');
+      }
+
+      // 处理上传的图片
+      const processedImages = await processUploadImages(req.files);
+      
+      // 检查是否有上传失败的图片
+      const failedImages = processedImages.filter(img => img.error);
+      if (failedImages.length > 0) {
+        console.error('部分图片上传失败:', failedImages);
+      }
+      
+      // 返回上传成功的图片
+      const successImages = processedImages.filter(img => !img.error);
+      
+      return successResponse(res, {
+        images: successImages.map(img => ({
+          filename: img.filename,
+          url: img.url,
+          size: img.size
+        })),
+        uploaded: successImages.length,
+        failed: failedImages.length
+      }, `成功上传${successImages.length}张图片${failedImages.length > 0 ? `，${failedImages.length}张失败` : ''}`);
+    } catch (error) {
+      console.error('图片上传失败:', error);
+      return errorResponse(res, 'SYS_001', '图片上传失败', error.message);
     }
   }
 }

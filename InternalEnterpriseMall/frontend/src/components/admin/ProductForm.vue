@@ -92,19 +92,50 @@
         </el-col>
       </el-row>
       
-      <el-form-item label="商品图片" prop="image">
-        <el-upload
-          class="image-uploader"
-          :action="uploadUrl"
-          :headers="uploadHeaders"
-          :show-file-list="false"
-          :on-success="handleUploadSuccess"
-          :before-upload="beforeImageUpload"
-        >
-          <img v-if="form.image" :src="form.image" class="uploaded-image" />
-          <el-icon v-else class="image-uploader-icon"><Plus /></el-icon>
-        </el-upload>
-        <div class="upload-tip">支持jpg、png格式，大小不超过2MB</div>
+      <el-form-item label="商品图片" prop="images">
+        <div class="image-upload-container">
+          <div class="image-list">
+            <div
+              v-for="(image, index) in form.images"
+              :key="index"
+              class="image-item"
+            >
+              <img :src="image.url" class="uploaded-image" />
+              <div v-if="index === primaryImageIndex" class="primary-image-mark">主图</div>
+              <div class="image-actions">
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click="setPrimaryImage(index)"
+                  :disabled="index === primaryImageIndex"
+                >
+                  {{ index === primaryImageIndex ? '主图' : '设为主图' }}
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="removeImage(index)"
+                >
+                  删除
+                </el-button>
+              </div>
+            </div>
+            <div class="image-uploader-wrapper">
+              <el-upload
+                class="image-uploader"
+                :action="uploadUrl"
+                :headers="uploadHeaders"
+                :show-file-list="false"
+                :on-success="handleUploadSuccess"
+                :before-upload="beforeImageUpload"
+                name="image"
+              >
+                <el-icon class="image-uploader-icon"><Plus /></el-icon>
+              </el-upload>
+              <div class="upload-tip">支持jpg、png格式，大小不超过5MB，最多5张图片</div>
+            </div>
+          </div>
+        </div>
       </el-form-item>
       
       <el-divider content-position="left">商品规格</el-divider>
@@ -241,11 +272,13 @@ const form = reactive({
   stock: 0,
   warningStock: 10,
   categoryId: '',
-  image: '',
+  images: [],
   exchangeRules: '',
   sort: 0,
   status: 'active'
 })
+
+const primaryImageIndex = ref(0)
 
 const specifications = ref([
   { key: '', value: '' }
@@ -278,7 +311,21 @@ const initForm = () => {
     // 编辑模式，填充表单数据
     Object.keys(form).forEach(key => {
       if (props.product[key] !== undefined) {
-        form[key] = props.product[key]
+        if (key === 'images') {
+          // 处理图片数组
+          if (props.product[key] && Array.isArray(props.product[key])) {
+            form[key] = props.product[key].map((img, index) => ({
+              url: img,
+              isPrimary: index === 0
+            }))
+            primaryImageIndex.value = 0
+          } else {
+            form[key] = []
+            primaryImageIndex.value = 0
+          }
+        } else {
+          form[key] = props.product[key]
+        }
       }
     })
     
@@ -309,10 +356,14 @@ const resetForm = () => {
       form[key] = 0
     } else if (typeof form[key] === 'string') {
       form[key] = ''
+    } else if (Array.isArray(form[key])) {
+      form[key] = []
     }
   })
   form.status = 'active'
   form.warningStock = 10
+  form.images = []
+  primaryImageIndex.value = 0
   specifications.value = [{ key: '', value: '' }]
 }
 
@@ -330,25 +381,62 @@ const removeSpecification = (index) => {
 
 const beforeImageUpload = (file) => {
   const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-  const isLt2M = file.size / 1024 / 1024 < 2
+  const isLt5M = file.size / 1024 / 1024 < 5
+  const maxImages = 5
 
   if (!isJpgOrPng) {
     ElMessage.error('只支持jpg或png格式的图片!')
-  }
-  if (!isLt2M) {
-    ElMessage.error('图片大小不能超过2MB!')
+    return false
   }
   
-  return isJpgOrPng && isLt2M
+  if (!isLt5M) {
+    ElMessage.error('图片大小不能超过5MB!')
+    return false
+  }
+  
+  if (form.images.length >= maxImages) {
+    ElMessage.error(`最多只能上传${maxImages}张图片!`)
+    return false
+  }
+  
+  return true
 }
 
 const handleUploadSuccess = (response) => {
   if (response.success) {
-    form.image = response.data.url
+    // 添加到图片数组
+    form.images.push({
+      url: response.data.url,
+      isPrimary: form.images.length === 0 // 第一张图默认为主图
+    })
+    
+    // 如果是第一张图片，设置为主图
+    if (form.images.length === 1) {
+      primaryImageIndex.value = 0
+    }
+    
     ElMessage.success('图片上传成功')
   } else {
     ElMessage.error(response.message || '图片上传失败')
   }
+}
+
+const removeImage = (index) => {
+  form.images.splice(index, 1)
+  
+  // 如果删除的是主图，重新设置主图
+  if (index === primaryImageIndex.value && form.images.length > 0) {
+    primaryImageIndex.value = 0
+  } else if (index < primaryImageIndex.value) {
+    primaryImageIndex.value--
+  } else if (form.images.length === 0) {
+    primaryImageIndex.value = 0
+  }
+}
+
+const setPrimaryImage = (index) => {
+  primaryImageIndex.value = index
+  ElMessage.success('主图设置成功')
 }
 
 const handleSubmit = async () => {
@@ -365,8 +453,19 @@ const handleSubmit = async () => {
       }
     })
     
+    // 处理图片数组 - 只保留URL，并按照主图顺序排序
+    const sortedImages = [...form.images]
+    if (sortedImages.length > 0) {
+      // 将主图移到第一位
+      const primaryImage = sortedImages.splice(primaryImageIndex.value, 1)[0]
+      sortedImages.unshift(primaryImage)
+    }
+    
+    const imageUrls = sortedImages.map(img => img.url)
+    
     const submitData = {
       ...form,
+      images: imageUrls,
       specifications: specs
     }
     
@@ -407,6 +506,58 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.image-upload-container {
+  width: 100%;
+}
+
+.image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.image-item {
+  position: relative;
+  width: 150px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.uploaded-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.image-item:hover .image-actions {
+  opacity: 1;
+}
+
+.image-actions .el-button {
+  padding: 2px 5px;
+  font-size: 12px;
+}
+
+.image-uploader-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 .image-uploader {
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
@@ -419,16 +570,11 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #fafafa;
 }
 
 .image-uploader:hover {
   border-color: #409EFF;
-}
-
-.uploaded-image {
-  width: 150px;
-  height: 150px;
-  object-fit: cover;
 }
 
 .image-uploader-icon {
@@ -444,11 +590,23 @@ onMounted(() => {
   font-size: 12px;
   color: #999;
   margin-top: 5px;
+  width: 150px;
 }
 
 .spec-item {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+}
+
+.primary-image-mark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #409EFF;
+  color: white;
+  font-size: 12px;
+  padding: 2px 5px;
+  border-radius: 0 0 6px 0;
 }
 </style>

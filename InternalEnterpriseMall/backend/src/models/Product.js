@@ -390,7 +390,7 @@ class Product {
         p.name,
         p.points_required,
         p.sales,
-        p.image,
+        p.images,
         c.name as category_name
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
@@ -399,7 +399,22 @@ class Product {
       LIMIT ?
     `;
 
-    return await query(topSellingQuery, [limit]);
+    const products = await query(topSellingQuery, [limit]);
+    
+    // 处理图片JSON字段
+    products.forEach(product => {
+      try {
+        product.images = product.images ? JSON.parse(product.images) : [];
+        // 向后兼容：如果没有图片数组但有单个图片，则创建包含单个图片的数组
+        if (product.images.length === 0 && product.image) {
+          product.images = [product.image];
+        }
+      } catch (error) {
+        product.images = [];
+      }
+    });
+
+    return products;
   }
 }
 

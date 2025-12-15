@@ -86,8 +86,9 @@
         <el-table-column label="商品图片" width="100">
           <template #default="scope">
             <el-image
-              :src="scope.row.image || '/placeholder-image.png'"
-              :preview-src-list="[scope.row.image || '/placeholder-image.png']"
+              v-if="scope.row.images && scope.row.images.length > 0"
+              :src="scope.row.images[0].url || scope.row.images[0]"
+              :preview-src-list="scope.row.images.map(img => img.url || img)"
               fit="cover"
               style="width: 60px; height: 60px"
             >
@@ -97,6 +98,9 @@
                 </div>
               </template>
             </el-image>
+            <div v-else class="image-placeholder">
+              <el-icon><Picture /></el-icon>
+            </div>
           </template>
         </el-table-column>
         
@@ -295,6 +299,16 @@ const formatDateTime = (dateString) => {
   if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleString('zh-CN')
+}
+
+const getImageUrl = (image) => {
+  if (!image) return ''
+  
+  // 如果是对象，获取URL属性
+  const url = typeof image === 'object' ? image.url : image
+  
+  // 直接返回后端提供的完整URL
+  return url
 }
 
 const handleSearch = () => {

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const AdminController = require('../controllers/adminController');
+const { uploadSingle, uploadMultiple } = require('../utils/fileUpload');
 
 // 管理员登录
 router.post('/login', AdminController.login);
@@ -26,6 +27,10 @@ router.put('/products/:id', authenticateToken, requireAdmin, AdminController.upd
 router.delete('/products/:id', authenticateToken, requireAdmin, AdminController.deleteProduct);
 router.put('/products/batch-status', authenticateToken, requireAdmin, AdminController.batchUpdateProductStatus);
 router.delete('/products/batch', authenticateToken, requireAdmin, AdminController.batchDeleteProducts);
+
+// 商品图片上传
+router.post('/products/upload-image', authenticateToken, requireAdmin, uploadSingle, AdminController.uploadProductImage);
+router.post('/products/upload-images', authenticateToken, requireAdmin, uploadMultiple(5), AdminController.uploadProductImages);
 
 // 库存预警
 router.get('/products/low-stock', authenticateToken, requireAdmin, AdminController.getLowStockProducts);
