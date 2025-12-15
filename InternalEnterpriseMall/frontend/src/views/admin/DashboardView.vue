@@ -1,18 +1,10 @@
 <template>
-  <div class="page-container">
-    <div class="card-container">
-      <div class="page-header">
-        <h1 class="page-title">管理员仪表板</h1>
-        <el-button type="danger" @click="handleLogout" :loading="logoutLoading">
-          退出登录
-        </el-button>
-      </div>
-      
-      <div v-if="loading" class="loading-container">
-        <el-skeleton :rows="5" animated />
-      </div>
-      
-      <div v-else class="dashboard-content">
+  <AdminLayout>
+    <div v-if="loading" class="loading-container">
+      <el-skeleton :rows="5" animated />
+    </div>
+    
+    <div v-else class="dashboard-content">
         <el-row :gutter="20">
           <el-col :span="8">
             <el-card class="dashboard-card">
@@ -109,9 +101,8 @@
             </el-card>
           </el-col>
         </el-row>
-      </div>
     </div>
-  </div>
+  </AdminLayout>
 </template>
 
 <script setup>
@@ -120,13 +111,13 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { apiAdmin, apiAuth, apiHealth } from '@/api';
 import { useAuthStore } from '@/stores/auth';
+import AdminLayout from '@/components/layout/AdminLayout.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
 // 加载状态
 const loading = ref(true);
-const logoutLoading = ref(false);
 
 // 系统信息
 const systemInfo = ref({
@@ -159,21 +150,7 @@ const getAdminInfo = async () => {
   }
 };
 
-// 处理登出
-const handleLogout = async () => {
-  logoutLoading.value = true;
-  try {
-    await apiAuth.logout();
-    ElMessage.success('已成功退出登录');
-  } catch (error) {
-    console.error('登出请求失败:', error);
-    ElMessage.warning('已清除本地登录信息');
-  } finally {
-    logoutLoading.value = false;
-    authStore.clearAuth();
-    router.push('/');
-  }
-};
+
 
 // 连通性测试
 const testConnection = () => {
