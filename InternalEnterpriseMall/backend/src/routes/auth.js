@@ -82,4 +82,14 @@ router.post('/login', [
   }
 });
 
+// 用户登出
+router.post('/logout', (req, res) => {
+  // 在JWT方案中，服务端不需要做特殊处理
+  // 客户端删除token即可实现登出
+  res.status(200).json({
+    success: true,
+    message: '登出成功'
+  });
+});
+
 module.exports = router;

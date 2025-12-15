@@ -38,10 +38,15 @@ api.interceptors.response.use(
       
       switch (status) {
         case 401:
-          ElMessage.error('未授权，请重新登录')
-          authStore.clearAuth()
-          // 重定向到登录页
-          window.location.href = '/login'
+          // 如果是在登录页面收到401错误，显示具体的错误消息
+          if (window.location.pathname === '/login') {
+            ElMessage.error(data.message || '用户名或密码错误')
+          } else {
+            ElMessage.error('未授权，请重新登录')
+            authStore.clearAuth()
+            // 重定向到登录页
+            window.location.href = '/login'
+          }
           break
         case 403:
           ElMessage.error('权限不足')
@@ -80,12 +85,18 @@ export const apiAuth = {
     username,
     password,
     type
-  })
+  }),
+  
+  // 用户登出
+  logout: () => api.post('/auth/logout')
 }
 
 export const apiUser = {
   // 获取用户信息
   getProfile: () => api.get('/user/profile'),
+  
+  // 更新用户信息
+  updateProfile: (data) => api.put('/user/profile', data),
   
   // 获取测试商品列表
   getTestProducts: () => api.get('/user/test-products')
