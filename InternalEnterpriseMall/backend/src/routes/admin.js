@@ -28,6 +28,12 @@ router.delete('/products/:id', authenticateToken, requireAdmin, AdminController.
 router.put('/products/batch-status', authenticateToken, requireAdmin, AdminController.batchUpdateProductStatus);
 router.delete('/products/batch', authenticateToken, requireAdmin, AdminController.batchDeleteProducts);
 
+// 商品状态更新
+router.put('/products/:id/status', authenticateToken, requireAdmin, AdminController.updateProductStatus);
+
+// 商品库存调整
+router.put('/products/:id/stock', authenticateToken, requireAdmin, AdminController.updateProductStock);
+
 // 商品图片上传
 router.post('/products/upload-image', authenticateToken, requireAdmin, uploadSingle, AdminController.uploadProductImage);
 router.post('/products/upload-images', authenticateToken, requireAdmin, uploadMultiple(5), AdminController.uploadProductImages);

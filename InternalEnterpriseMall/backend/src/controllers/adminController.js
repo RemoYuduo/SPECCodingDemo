@@ -388,6 +388,60 @@ class AdminController {
       return errorResponse(res, 'SYS_001', '图片上传失败', error.message);
     }
   }
+
+  /**
+   * 更新商品状态（上架/下架）
+   */
+  static async updateProductStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      // 验证状态值
+      if (!status || (status !== 'active' && status !== 'inactive')) {
+        return errorResponse(res, 'SYS_001', '无效的状态值');
+      }
+      
+      const productData = { status };
+      const product = await ProductService.updateProduct(id, productData);
+      
+      if (!product) {
+        return errorResponse(res, 'PROD_001', '商品不存在');
+      }
+      
+      return successResponse(res, product, `商品${status === 'active' ? '上架' : '下架'}成功`);
+    } catch (error) {
+      console.error('更新商品状态失败:', error);
+      return errorResponse(res, 'SYS_001', '更新商品状态失败', error.message);
+    }
+  }
+
+  /**
+   * 更新商品库存
+   */
+  static async updateProductStock(req, res) {
+    try {
+      const { id } = req.params;
+      const { stock } = req.body;
+      
+      // 验证库存值
+      if (stock < 0 || !Number.isInteger(stock)) {
+        return errorResponse(res, 'SYS_001', '库存值必须是非负整数');
+      }
+      
+      const productData = { stock };
+      const product = await ProductService.updateProduct(id, productData);
+      
+      if (!product) {
+        return errorResponse(res, 'PROD_001', '商品不存在');
+      }
+      
+      return successResponse(res, product, '库存更新成功');
+    } catch (error) {
+      console.error('更新商品库存失败:', error);
+      return errorResponse(res, 'SYS_001', '更新商品库存失败', error.message);
+    }
+  }
 }
 
 module.exports = AdminController;
