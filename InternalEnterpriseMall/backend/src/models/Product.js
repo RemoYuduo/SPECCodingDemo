@@ -28,6 +28,8 @@ class Product {
     let params = [];
 
     // 构建WHERE条件
+    whereConditions.push('p.deleted_at IS NULL');
+    
     if (status) {
       whereConditions.push('p.status = ?');
       params.push(status);

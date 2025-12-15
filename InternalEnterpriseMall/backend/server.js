@@ -15,9 +15,6 @@ const productRoutes = require('./src/routes/product');
 // 导入中间件
 const errorHandler = require('./src/middleware/error');
 
-// 初始化数据库
-const { initDatabase } = require('./src/database/init');
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -55,14 +52,11 @@ app.use(errorHandler);
 // 启动服务器
 const startServer = async () => {
   try {
-    // 初始化数据库
-    await initDatabase();
-    console.log('数据库初始化完成');
-    
     // 启动服务器
     app.listen(PORT, () => {
       console.log(`服务器运行在端口 ${PORT}`);
       console.log(`API文档地址: http://localhost:${PORT}/api/health`);
+      console.log('提示: 如果数据库未初始化，请先运行 "初始化数据库.bat"');
     });
   } catch (error) {
     console.error('服务器启动失败:', error);

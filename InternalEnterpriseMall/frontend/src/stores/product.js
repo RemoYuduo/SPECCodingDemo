@@ -176,8 +176,8 @@ export const useProductStore = defineStore('product', () => {
       const response = await apiAdminProduct.deleteProduct(id)
       
       if (response.success) {
-        // 从列表中移除商品
-        products.value = products.value.filter(p => p.id !== id)
+        // 重新获取商品列表，确保数据同步
+        await fetchProducts()
         
         // 如果当前编辑的是这个商品，清空
         if (currentProduct.value && currentProduct.value.id === id) {
