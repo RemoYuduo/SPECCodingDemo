@@ -161,7 +161,7 @@ const handleLogin = async () => {
       if (response.userType === 'admin') {
         router.push('/admin/dashboard');
       } else {
-        router.push('/user/profile');
+        router.push('/products');
       }
     }
   } catch (error) {

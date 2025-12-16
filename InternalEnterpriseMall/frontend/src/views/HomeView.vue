@@ -4,14 +4,17 @@
       <h1 class="page-title">企业内部福利商城</h1>
       <p>欢迎使用企业内部福利商城系统！</p>
       <div class="button-group">
-        <el-button type="primary" @click="$router.push('/connectivity-test')">
-          服务连通性测试
-        </el-button>
         <el-button type="success" @click="goToUserLogin">
           用户登录
         </el-button>
         <el-button type="warning" @click="goToAdminLogin">
           管理员登录
+        </el-button>
+        <el-button type="primary" @click="goToProducts">
+          商品浏览
+        </el-button>
+        <el-button type="info" @click="$router.push('/connectivity-test')">
+          服务连通性测试
         </el-button>
       </div>
       <div class="account-tips">
@@ -42,6 +45,11 @@ const goToAdminLogin = () => {
     path: '/login',
     query: { type: 'admin' }
   });
+};
+
+// 跳转到商品浏览页面
+const goToProducts = () => {
+  router.push('/products');
 };
 </script>
 

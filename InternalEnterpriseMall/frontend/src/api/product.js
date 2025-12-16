@@ -11,6 +11,9 @@ export const apiProduct = {
   // 获取商品详情
   getProductDetail: (id) => api.get(`/products/${id}`),
   
+  // 商品搜索
+  searchProducts: (params) => api.get('/products/search', { params }),
+  
   // 商品收藏
   addFavorite: (id) => api.post(`/products/${id}/favorite`),
   

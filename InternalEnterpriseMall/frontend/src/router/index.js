@@ -9,6 +9,16 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue')
     },
     {
+      path: '/products',
+      name: 'products',
+      component: () => import('@/views/product/ProductBrowseView.vue')
+    },
+    {
+      path: '/products/:id',
+      name: 'product-detail',
+      component: () => import('@/views/product/ProductDetailView.vue')
+    },
+    {
       path: '/connectivity-test',
       name: 'connectivity-test',
       component: () => import('@/views/ConnectivityTest.vue')
@@ -22,6 +32,11 @@ const router = createRouter({
       path: '/user/profile',
       name: 'user-profile',
       component: () => import('@/views/user/ProfileView.vue')
+    },
+    {
+      path: '/user/favorites',
+      name: 'user-favorites',
+      component: () => import('@/views/user/FavoritesView.vue')
     },
     {
       path: '/admin/dashboard',

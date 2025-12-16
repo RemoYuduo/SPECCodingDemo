@@ -6,6 +6,9 @@ const { authenticateToken } = require('../middleware/auth');
 // 商品列表 - 公开接口
 router.get('/', ProductController.getProducts);
 
+// 商品搜索 - 公开接口
+router.get('/search', ProductController.searchProducts);
+
 // 商品分类 - 公开接口
 router.get('/categories', ProductController.getCategories);
 

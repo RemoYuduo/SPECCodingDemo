@@ -12,10 +12,7 @@ class ProductController {
         limit = 10,
         category,
         sort = 'created_desc',
-        keyword,
-        status,
-        minPoints,
-        maxPoints
+        status = 'active'
       } = req.query;
 
       const options = {
@@ -23,26 +20,10 @@ class ProductController {
         limit: parseInt(limit),
         category,
         sort,
-        keyword,
         status
       };
 
-      let result;
-      if (keyword || category || minPoints || maxPoints) {
-        // 如果有搜索条件，使用搜索方法
-        result = await ProductService.searchProducts({
-          keyword,
-          category,
-          minPoints: minPoints ? parseInt(minPoints) : undefined,
-          maxPoints: maxPoints ? parseInt(maxPoints) : undefined,
-          sortBy: sort,
-          page: parseInt(page),
-          limit: parseInt(limit)
-        });
-      } else {
-        // 否则使用普通获取方法
-        result = await ProductService.getProducts(options);
-      }
+      const result = await ProductService.getProducts(options);
 
       // 获取分类列表用于筛选
       const categories = await ProductService.getCategories({ status: 'active' });
@@ -63,6 +44,57 @@ class ProductController {
     } catch (error) {
       console.error('获取商品列表失败:', error);
       return errorResponse(res, 'SYS_001', '获取商品列表失败', error.message);
+    }
+  }
+
+  /**
+   * 搜索商品
+   */
+  static async searchProducts(req, res) {
+    try {
+      const {
+        page = 1,
+        limit = 10,
+        keyword,
+        category,
+        sort = 'created_desc',
+        status = 'active',
+        minPoints,
+        maxPoints
+      } = req.query;
+
+      const searchOptions = {
+        keyword,
+        category,
+        minPoints: minPoints ? parseInt(minPoints) : undefined,
+        maxPoints: maxPoints ? parseInt(maxPoints) : undefined,
+        sortBy: sort,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        status
+      };
+
+      const result = await ProductService.searchProducts(searchOptions);
+
+      // 获取分类列表用于筛选
+      const categories = await ProductService.getCategories({ status: 'active' });
+      
+      // 计算每个分类的商品数量
+      const categoriesWithCount = await ProductService.getCategoriesWithProductCount();
+
+      return successResponse(res, {
+        ...result,
+        filters: {
+          categories: categoriesWithCount.map(cat => ({
+            id: cat.id,
+            name: cat.name,
+            count: cat.product_count
+          }))
+        }
+      });
+    } catch (error) {
+      console.error('搜索商品失败:', error);
+      return errorResponse(res, 'SYS_001', '搜索商品失败', error.message);
     }
   }
 

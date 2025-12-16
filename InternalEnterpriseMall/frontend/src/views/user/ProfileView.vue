@@ -1,5 +1,26 @@
 <template>
   <div class="page-container">
+    <!-- 用户导航菜单 -->
+    <div class="user-nav">
+      <div class="nav-card">
+        <div class="nav-title">功能导航</div>
+        <div class="nav-list">
+          <router-link to="/products" class="nav-item">
+            <el-icon><Shop /></el-icon>
+            <span>商品浏览</span>
+          </router-link>
+          <router-link to="/user/favorites" class="nav-item">
+            <el-icon><Star /></el-icon>
+            <span>我的收藏</span>
+          </router-link>
+          <router-link to="/user/profile" class="nav-item active">
+            <el-icon><User /></el-icon>
+            <span>个人资料</span>
+          </router-link>
+        </div>
+      </div>
+    </div>
+    
     <div class="card-container">
       <div class="page-header">
         <h1 class="page-title">用户个人资料</h1>
@@ -66,6 +87,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { Shop, Star, User } from '@element-plus/icons-vue';
 import { apiUser, apiAuth } from '@/api';
 import { useAuthStore } from '@/stores/auth';
 
@@ -181,6 +203,51 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.user-nav {
+  margin-bottom: 20px;
+}
+
+.nav-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.nav-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #303133;
+}
+
+.nav-list {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #606266;
+  transition: all 0.3s;
+}
+
+.nav-item:hover {
+  background-color: #f5f7fa;
+  color: #409eff;
+}
+
+.nav-item.active {
+  background-color: #ecf5ff;
+  color: #409eff;
+  font-weight: 500;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -204,5 +271,16 @@ onMounted(() => {
 
 .dialog-footer {
   text-align: right;
+}
+
+@media (max-width: 768px) {
+  .nav-list {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .nav-item {
+    padding: 12px 16px;
+  }
 }
 </style>
