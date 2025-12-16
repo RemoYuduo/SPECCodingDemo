@@ -11,6 +11,7 @@ const userRoutes = require('./src/routes/user');
 const adminRoutes = require('./src/routes/admin');
 const healthRoutes = require('./src/routes/health');
 const productRoutes = require('./src/routes/product');
+const cartRoutes = require('./src/routes/cart');
 
 // 导入中间件
 const errorHandler = require('./src/middleware/error');
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
 
 // 404处理
 app.use('*', (req, res) => {

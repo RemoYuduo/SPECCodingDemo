@@ -89,6 +89,18 @@
             </div>
           </div>
           
+          <!-- 数量选择 -->
+          <div class="product-quantity">
+            <span class="quantity-label">数量：</span>
+            <el-input-number
+              v-model="quantity"
+              :min="1"
+              :max="product.stock || 1"
+              size="large"
+              :disabled="product.stock <= 0"
+            ></el-input-number>
+          </div>
+          
           <div class="product-actions">
             <el-button
               type="primary"
@@ -97,6 +109,13 @@
               @click="handleExchange"
             >
               立即兑换
+            </el-button>
+            <el-button
+              size="large"
+              @click="handleAddToCart"
+              :disabled="product.stock <= 0"
+            >
+              加入购物车
             </el-button>
             <el-button
               size="large"
@@ -157,6 +176,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Picture, View, ShoppingCart, Star, StarFilled, Goods, CircleCheckFilled } from '@element-plus/icons-vue'
 import { useUserProductStore } from '@/stores/userProduct'
+import { useAuthStore } from '@/stores/auth'
+import { addProductToCart } from '@/stores/cart'
 
 const route = useRoute()
 const router = useRouter()
@@ -164,6 +185,7 @@ const productStore = useUserProductStore()
 
 // 状态
 const activeTab = ref('description')
+const quantity = ref(1)
 
 // 计算属性
 const loading = computed(() => productStore.loading)
@@ -246,6 +268,25 @@ const toggleFavorite = async () => {
 const handleExchange = () => {
   // TODO: 实现商品兑换功能
   ElMessage.info('商品兑换功能开发中...')
+}
+
+// 添加到购物车
+const handleAddToCart = () => {
+  if (!product.value) return
+  
+  // 检查用户是否已登录
+  const authStore = useAuthStore()
+  if (!authStore.isAuthenticated) {
+    ElMessage.warning('请先登录后再添加商品到购物车')
+    router.push('/login')
+    return
+  }
+  
+  addProductToCart(product.value.id, quantity.value).then(success => {
+    if (success) {
+      ElMessage.success('商品已加入购物车')
+    }
+  })
 }
 
 // 生命周期
@@ -361,6 +402,19 @@ onMounted(() => {
   gap: 6px;
   font-size: 14px;
   color: #606266;
+}
+
+.product-quantity {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.quantity-label {
+  margin-right: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
 }
 
 .product-actions {

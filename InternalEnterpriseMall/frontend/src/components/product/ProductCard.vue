@@ -46,6 +46,16 @@
           {{ product.sales || 0 }}
         </span>
       </div>
+      <div class="product-actions">
+        <el-button 
+          type="primary" 
+          size="small" 
+          @click.stop="addToCart"
+          :disabled="product.stock <= 0"
+        >
+          加入购物车
+        </el-button>
+      </div>
     </div>
   </div>
 </template>
@@ -62,7 +72,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['click', 'favorite'])
+const emit = defineEmits(['click', 'favorite', 'addToCart'])
 
 const productStore = useProductStore()
 
@@ -102,6 +112,11 @@ const stockStatus = computed(() => {
 // 切换收藏状态
 const toggleFavorite = () => {
   emit('favorite', props.product)
+}
+
+// 加入购物车
+const addToCart = () => {
+  emit('addToCart', props.product)
 }
 </script>
 
@@ -252,6 +267,10 @@ const toggleFavorite = () => {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.product-actions {
+  margin-top: 12px;
 }
 
 @media (max-width: 768px) {

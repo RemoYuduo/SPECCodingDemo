@@ -25,6 +25,10 @@
             <el-option label="销量从低到高" value="sales_asc" />
           </el-select>
         </div>
+        <el-button type="primary" plain @click="goToCart">
+          <el-icon><ShoppingCart /></el-icon>
+          我的购物车
+        </el-button>
         <el-button type="primary" plain @click="goToFavorites">
           <el-icon><Star /></el-icon>
           我的收藏
@@ -85,6 +89,7 @@
             :product="product"
             @click="goToProductDetail(product.id)"
             @favorite="toggleFavorite(product)"
+            @addToCart="addToCartFromBrowse(product)"
           />
         </div>
 
@@ -109,8 +114,10 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Star } from '@element-plus/icons-vue'
+import { Star, ShoppingCart } from '@element-plus/icons-vue'
 import { useUserProductStore } from '@/stores/userProduct'
+import { useAuthStore } from '@/stores/auth'
+import { addProductToCart } from '@/stores/cart'
 import ProductCard from '@/components/product/ProductCard.vue'
 
 const router = useRouter()
@@ -196,8 +203,28 @@ const toggleFavorite = async (product) => {
   }
 }
 
+const addToCartFromBrowse = (product) => {
+  // 检查用户是否已登录
+  const authStore = useAuthStore()
+  if (!authStore.isAuthenticated) {
+    ElMessage.warning('请先登录后再添加商品到购物车')
+    router.push('/login')
+    return
+  }
+  
+  addProductToCart(product.id, 1).then(success => {
+    if (success) {
+      ElMessage.success('商品已加入购物车')
+    }
+  })
+}
+
 const goToFavorites = () => {
   router.push('/user/favorites')
+}
+
+const goToCart = () => {
+  router.push('/user/cart')
 }
 
 // 监听器

@@ -9,6 +9,10 @@
             <el-icon><Shop /></el-icon>
             <span>商品浏览</span>
           </router-link>
+          <router-link to="/user/cart" class="nav-item">
+            <el-icon><ShoppingCart /></el-icon>
+            <span>我的购物车</span>
+          </router-link>
           <router-link to="/user/favorites" class="nav-item">
             <el-icon><Star /></el-icon>
             <span>我的收藏</span>
@@ -87,7 +91,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { Shop, Star, User } from '@element-plus/icons-vue';
+import { Shop, Star, User, ShoppingCart } from '@element-plus/icons-vue';
 import { apiUser, apiAuth } from '@/api';
 import { useAuthStore } from '@/stores/auth';
 

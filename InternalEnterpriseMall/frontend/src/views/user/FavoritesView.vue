@@ -9,6 +9,10 @@
             <el-icon><Shop /></el-icon>
             <span>商品浏览</span>
           </router-link>
+          <router-link to="/user/cart" class="nav-item">
+            <el-icon><ShoppingCart /></el-icon>
+            <span>我的购物车</span>
+          </router-link>
           <router-link to="/user/favorites" class="nav-item active">
             <el-icon><Star /></el-icon>
             <span>我的收藏</span>
@@ -47,6 +51,7 @@
           :product="{ ...product, isFavorite: true }"
           @click="goToProductDetail(product.id)"
           @favorite="toggleFavorite(product)"
+          @addToCart="addToCartFromFavorites(product)"
         />
       </div>
       
@@ -70,8 +75,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Shop, Star, User } from '@element-plus/icons-vue'
+import { Shop, Star, User, ShoppingCart } from '@element-plus/icons-vue'
 import { useUserProductStore } from '@/stores/userProduct'
+import { addProductToCart } from '@/stores/cart'
 import ProductCard from '@/components/product/ProductCard.vue'
 
 const router = useRouter()
@@ -104,6 +110,14 @@ const toggleFavorite = async (product) => {
   } else {
     ElMessage.error(result.message || '操作失败')
   }
+}
+
+const addToCartFromFavorites = (product) => {
+  addProductToCart(product.id, 1).then(success => {
+    if (success) {
+      ElMessage.success('商品已加入购物车')
+    }
+  })
 }
 
 const handleSizeChange = (size) => {

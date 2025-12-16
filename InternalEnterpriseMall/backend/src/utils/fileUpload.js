@@ -2,7 +2,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
-const { v4: uuidv4 } = require('uuid');
 
 // 确保上传目录存在
 const ensureDirExists = (dir) => {
@@ -18,9 +17,14 @@ const storage = multer.diskStorage({
     ensureDirExists(uploadPath);
     cb(null, uploadPath);
   },
-  filename: (req, file, cb) => {
-    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
+  filename: async (req, file, cb) => {
+    try {
+      const { v4: uuidv4 } = await import('uuid');
+      const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+      cb(null, uniqueName);
+    } catch (error) {
+      cb(error);
+    }
   }
 });
 
